@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Arcade Facilitator Program 2025 Cohort 1</title>
+  <style>
+    body {
+      background-image: url('Background.png');
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      font-family: 'Poppins', Arial, sans-serif;
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+    }
+    header img {
+      width: 1220px; /* or 350px or whatever size you like */
+      max-width: 90%; /* this keeps it responsive on mobile */
+      height: auto; /* maintain aspect ratio */
+      margin-bottom: 20px;
+      display: inline-block; /* makes sure it behaves properly inside centered text */
+    }
+
+    h1 {
+      background-color: rgba(0, 0, 0, 0.6);
+      display: inline-block;
+      padding: 10px 30px;
+      border-radius: 15px;
+      font-size: 32px;
+    }
+    .rankings-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 30px;
+    }
+    .rank-section {
+      background: rgba(0, 0, 0, 0.5);
+      padding: 20px;
+      width: 45%;
+      min-width: 300px;
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+      margin-bottom: 20px;
+    }
+    .rank-section h2 {
+      margin-bottom: 20px;
+      font-size: 26px;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+      font-size: 20px;
+    }
+    li {
+      margin: 10px 0;
+      padding: 10px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+    }
+    .milestones {
+      background: rgba(0, 0, 0, 0.6);
+      margin-top: 40px;
+      padding: 30px;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+      box-shadow: 0 0 20px rgba(255,255,255,0.3);
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <img src="arcadelogo.png" alt="Google Cloud Arcade Logo">
+  <h1>Arcade Facilitator Program 2025 Cohort 1</h1>
+</header>
+
+<div id="rankings">Loading data...</div>
+
+<script>
+async function loadCSV() {
+  const response = await fetch('GCAF25C1-IN-3FU-DXR [28 Apr].csv'); // Replace with your CSV file name
+  const text = await response.text();
+  processCSV(text);
+}
+
+function processCSV(text) {
+  const rows = text.trim().split('\n').map(row => row.split(','));
+  const headers = rows.shift();
+
+  const data = rows.map(row => {
+    let obj = {};
+    headers.forEach((header, i) => {
+      const key = header.trim();
+      const value = row[i]?.trim() || '0';
+      if ([
+        '# of Skill Badges Completed',
+        '# of Arcade Games Completed',
+        '# of Trivia Games Completed',
+        '# of Lab-free Courses Completed'
+      ].includes(key)) {
+        obj[key] = parseInt(value, 10) || 0; // force numbers
+      } else {
+        obj[key] = value;
+      }
+    });
+    return obj;
+  });
+  
+
+  const skillBadges = [...data].sort((a, b) => b['# of Skill Badges Completed'] - a['# of Skill Badges Completed']).slice(0, 10);
+  const arcadeGames = [...data].sort((a, b) => b['# of Arcade Games Completed'] - a['# of Arcade Games Completed']).slice(0, 10);
+  const triviaGames = [...data].sort((a, b) => b['# of Trivia Games Completed'] - a['# of Trivia Games Completed']).slice(0, 10);
+  const labFreeCourses = [...data].sort((a, b) => b['# of Lab-free Courses Completed'] - a['# of Lab-free Courses Completed']).slice(0, 10);
+
+  const milestones = data.filter(d => d['Milestone Earned'] && d['Milestone Earned'].toLowerCase().includes('milestone 1'));
+
+  const rankingsDiv = document.getElementById('rankings');
+  rankingsDiv.innerHTML = `
+    <div class="rankings-container">
+      ${generateRankSection('🏅 Skill Badges Completed', skillBadges, '# of Skill Badges Completed')}
+      ${generateRankSection('🏆 Arcade Games Completed', arcadeGames, '# of Arcade Games Completed')}
+      ${generateRankSection('🎯 Trivia Games Completed', triviaGames, '# of Trivia Games Completed')}
+      ${generateRankSection('🎓 Lab-Free Courses Completed', labFreeCourses, '# of Lab-free Courses Completed')}
+    </div>
+    <div class="milestones">
+      <h2>🌟 Milestone 1 Achievers</h2>
+      <ul>
+        ${milestones.map(d => `<li>${d['User Name']}</li>`).join('')}
+      </ul>
+    </div>
+  `;
+}
+
+function generateRankSection(title, dataList, field) {
+  return `
+    <div class="rank-section">
+      <h2>${title}</h2>
+      <ul>
+        ${dataList.map((d, index) => `
+          <li>
+            ${getMedal(index)} Rank ${index + 1}: <strong>${d['User Name']}</strong> (${d[field]} Completed)
+          </li>`).join('')}
+      </ul>
+    </div>
+  `;
+}
+
+function getMedal(index) {
+  if (index === 0) return "🥇";
+  if (index === 1) return "🥈";
+  if (index === 2) return "🥉";
+  return "🏅";
+}
+
+loadCSV();
+</script>
+
+</body>
+</html>
